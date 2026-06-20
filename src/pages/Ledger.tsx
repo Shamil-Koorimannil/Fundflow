@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../db/dbClient';
 import { Category, Expense, FundsLog } from '../types';
-import { 
-  Search, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
+import {
+  Search,
+  ArrowUpRight,
+  ArrowDownLeft,
   ArrowRightLeft,
   Calendar,
   Filter,
@@ -27,12 +27,12 @@ interface LedgerItem {
 export const Ledger: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [ledgerItems, setLedgerItems] = useState<LedgerItem[]>([]);
-  
+
   // Filtering
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  
+
   const loadData = async () => {
     try {
       const cats = await db.getCategories();
@@ -62,7 +62,7 @@ export const Ledger: React.FC = () => {
       funds.forEach(f => {
         const cat = cats.find(c => c.id === f.category_id);
         const isTransfer = f.reason.toLowerCase().includes('transfer');
-        
+
         let type: 'Fund Added' | 'Fund Removed' | 'Transfer' = f.amount > 0 ? 'Fund Added' : 'Fund Removed';
         if (isTransfer) {
           type = 'Transfer';
@@ -94,9 +94,9 @@ export const Ledger: React.FC = () => {
 
   // Filtering calculations
   const filteredLedger = ledgerItems.filter(item => {
-    const matchesSearch = item.notes.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType ? item.type === selectedType : true;
     const matchesCat = selectedCategory ? item.categoryName === selectedCategory : true;
 
@@ -116,9 +116,9 @@ export const Ledger: React.FC = () => {
       `"${i.notes.replace(/"/g, '""')}"`
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
       + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-      
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -137,7 +137,7 @@ export const Ledger: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* 1. HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/8 pb-5">
         <div>
@@ -149,7 +149,7 @@ export const Ledger: React.FC = () => {
           </p>
         </div>
 
-        <button 
+        <button
           onClick={handleExportCSV}
           disabled={filteredLedger.length === 0}
           className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow-[0_0_12px_rgba(99,102,241,0.4)] border border-white/10 hover:border-white/20 transition duration-150 disabled:opacity-40 cursor-pointer"
@@ -162,12 +162,12 @@ export const Ledger: React.FC = () => {
       {/* 2. FILTERS CARD */}
       <div className="glass-card p-4 rounded-2xl space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-          
+
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Search Keywords / ID</label>
             <div className="relative">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="TXN ID, notes, wifi..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -211,7 +211,7 @@ export const Ledger: React.FC = () => {
         {/* Filters status row */}
         {(searchQuery || selectedType || selectedCategory) && (
           <div className="flex justify-end border-t border-white/8 pt-2">
-            <button 
+            <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedType('');
@@ -227,7 +227,7 @@ export const Ledger: React.FC = () => {
 
       {/* 3. TABLE SHEET */}
       <div className="glass-card rounded-2xl shadow-sm overflow-hidden">
-        
+
         {/* Desktop View Table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full border-collapse text-left">
@@ -252,10 +252,10 @@ export const Ledger: React.FC = () => {
               ) : (
                 filteredLedger.map(item => {
                   const isPositive = item.amount > 0;
-                  
+
                   let icon = <ArrowUpRight className="h-3 w-3" />;
                   let typeStyle = 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400';
-                  
+
                   if (item.type === 'Fund Added') {
                     icon = <ArrowDownLeft className="h-3 w-3" />;
                     typeStyle = 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400';
@@ -340,4 +340,7 @@ export const Ledger: React.FC = () => {
     </div>
   );
 };
+
+
+
 export default Ledger;
