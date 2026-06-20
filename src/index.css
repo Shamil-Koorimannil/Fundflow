@@ -1,0 +1,208 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+}
+
+/* Custom Styles */
+@layer utilities {
+  .plus-grid {
+    background-image: 
+      linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .plus-grid-dark {
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Liquid Glass Base Utilities */
+  .glassmorphism {
+    background: rgba(10, 11, 24, 0.45);
+    backdrop-filter: blur(24px) saturate(170%);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  }
+
+  .glassmorphism-dark {
+    background: rgba(10, 11, 24, 0.5);
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 8px 32px 0 rgba(0, 0, 0, 0.55);
+  }
+
+  .glass-card {
+    background: rgba(10, 11, 24, 0.45);
+    backdrop-filter: blur(24px) saturate(170%);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .dark .glass-card {
+    background: rgba(10, 11, 24, 0.45);
+    backdrop-filter: blur(24px) saturate(170%);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  }
+
+  .glass-card:hover {
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 0 24px 2px rgba(168, 85, 247, 0.22), 0 8px 32px 0 rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .glass-modal {
+    background: rgba(10, 11, 24, 0.7);
+    backdrop-filter: blur(28px) saturate(170%);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), 0 20px 40px -8px rgba(0, 0, 0, 0.55);
+  }
+
+  .dark .glass-modal {
+    background: rgba(10, 11, 24, 0.75);
+    backdrop-filter: blur(28px) saturate(170%);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), 0 20px 40px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Neon Text Shadow Utilities */
+  .neon-text-cyan {
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+  }
+  .neon-text-purple {
+    text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+  }
+  .neon-text-emerald {
+    text-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+  }
+  .neon-text-rose {
+    text-shadow: 0 0 8px rgba(251, 113, 133, 0.6);
+  }
+
+  /* Premium Gradient Text */
+  .neon-grad-cyan-blue {
+    background: linear-gradient(to right, #22d3ee, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .neon-grad-purple-pink {
+    background: linear-gradient(to right, #d946ef, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .neon-grad-emerald-teal {
+    background: linear-gradient(to right, #34d399, #14b8a6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Neon Glow Border Shadows */
+  .neon-shadow-cyan {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 0 15px rgba(34, 211, 238, 0.35);
+  }
+  .neon-shadow-purple {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 0 15px rgba(168, 85, 247, 0.35);
+  }
+  .neon-shadow-emerald {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 0 15px rgba(52, 211, 153, 0.35);
+  }
+  .neon-shadow-rose {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 0 15px rgba(251, 113, 133, 0.35);
+  }
+}
+
+/* Base resets & styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  background-color: #05050c !important;
+  color: #f8fafc !important;
+}
+
+/* Custom premium scrollbar styling matching dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e1e2f;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #312e81;
+}
+
+/* Print Styles for high fidelity PDF layout */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-card {
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
+
+/* Pulse status animations */
+@keyframes micro-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.95;
+  }
+}
+
+.pulse-hover:hover {
+  animation: micro-pulse 0.8s ease-in-out infinite;
+}
