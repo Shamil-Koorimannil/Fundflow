@@ -210,3 +210,152 @@ insert into public.categories (name, description, allocated_amount, current_bala
 ('Cleaning', 'Office janitorial and cleaning supplies', 350.00, 350.00, 0.00, 20.00, 'zywo.in@gmail.com'),
 ('Client Meeting', 'Business meals and client engagements', 3000.00, 3000.00, 0.00, 20.00, 'zywo.in@gmail.com')
 on conflict (name) do nothing;
+
+
+-- ==================== AUTOMATIC STATS RECALCULATION TRIGGERS ====================
+
+-- Drop existing triggers and functions if they exist to allow clean re-runs
+drop trigger if exists tr_expenses_sync on public.expenses;
+drop trigger if exists tr_funds_log_sync on public.funds_log;
+drop trigger if exists tr_categories_sync on public.categories;
+drop function if exists public.tr_expenses_sync_func();
+drop function if exists public.tr_funds_log_sync_func();
+drop function if exists public.tr_categories_sync_func();
+drop function if exists public.recalculate_category_stats(uuid);
+
+-- Function to recalculate stats for a given category
+create or replace function public.recalculate_category_stats(cat_id uuid)
+returns void as $$
+declare
+    v_name text;
+    v_allocated numeric(15, 2);
+    v_threshold numeric(5, 2);
+    v_spent numeric(15, 2);
+    v_funds numeric(15, 2);
+    v_balance numeric(15, 2);
+    v_remaining_pct numeric(15, 2);
+begin
+    -- Fetch category base configurations
+    select name, allocated_amount, threshold 
+    into v_name, v_allocated, v_threshold
+    from public.categories
+    where id = cat_id;
+
+    if not found then
+        return;
+    end if;
+
+    -- Compute total spent from expenses
+    select coalesce(sum(amount), 0.00) into v_spent
+    from public.expenses
+    where category_id = cat_id;
+
+    -- Compute net funds log balance (adds minus deductions)
+    select coalesce(sum(amount), 0.00) into v_funds
+    from public.funds_log
+    where category_id = cat_id;
+
+    -- Final current balance
+    v_balance := v_allocated + v_funds - v_spent;
+
+    -- Perform atomic update
+    update public.categories
+    set spent_amount = v_spent,
+        current_balance = v_balance
+    where id = cat_id;
+
+    -- Handle auto-notifications inside the database triggers
+    if v_balance < 0.00 then
+        if not exists (
+            select 1 from public.notifications 
+            where category_id = cat_id and type = 'negative_balance' and read = false
+        ) then
+            insert into public.notifications (type, message, read, category_id)
+            values (
+                'negative_balance',
+                'CRITICAL ALERT: Category "' || v_name || '" has reached a negative balance of ₹' || to_char(v_balance, 'FM999999990.00') || '!',
+                false,
+                cat_id
+            );
+        end if;
+    elsif v_allocated > 0.00 then
+        v_remaining_pct := (v_balance / v_allocated) * 100.00;
+        if v_remaining_pct < v_threshold then
+            if not exists (
+                select 1 from public.notifications 
+                where category_id = cat_id and type = 'low_balance' and read = false
+            ) then
+                insert into public.notifications (type, message, read, category_id)
+                values (
+                    'low_balance',
+                    'Warning: Category "' || v_name || '" balance is low! Remaining balance is ₹' || to_char(v_balance, 'FM999999990.00') || ' (' || to_char(v_remaining_pct, 'FM990.0') || '% remaining).',
+                    false,
+                    cat_id
+                );
+            end if;
+        end if;
+    end if;
+end;
+$$ language plpgsql;
+
+-- Trigger Function for Expenses updates
+create or replace function public.tr_expenses_sync_func()
+returns trigger as $$
+begin
+    if (tg_op = 'INSERT') then
+        perform public.recalculate_category_stats(new.category_id);
+    elsif (tg_op = 'UPDATE') then
+        perform public.recalculate_category_stats(new.category_id);
+        if (old.category_id <> new.category_id) then
+            perform public.recalculate_category_stats(old.category_id);
+        end if;
+    elsif (tg_op = 'DELETE') then
+        perform public.recalculate_category_stats(old.category_id);
+    end if;
+    return null;
+end;
+$$ language plpgsql;
+
+-- Trigger Function for Funds Log updates
+create or replace function public.tr_funds_log_sync_func()
+returns trigger as $$
+begin
+    if (tg_op = 'INSERT') then
+        perform public.recalculate_category_stats(new.category_id);
+    elsif (tg_op = 'UPDATE') then
+        perform public.recalculate_category_stats(new.category_id);
+        if (old.category_id <> new.category_id) then
+            perform public.recalculate_category_stats(old.category_id);
+        end if;
+    elsif (tg_op = 'DELETE') then
+        perform public.recalculate_category_stats(old.category_id);
+    end if;
+    return null;
+end;
+$$ language plpgsql;
+
+-- Trigger Function for Category allocated_amount updates
+create or replace function public.tr_categories_sync_func()
+returns trigger as $$
+begin
+    if (old.allocated_amount is distinct from new.allocated_amount) then
+        new.current_balance := new.allocated_amount + 
+            coalesce((select sum(amount) from public.funds_log where category_id = new.id), 0.00) - 
+            coalesce((select sum(amount) from public.expenses where category_id = new.id), 0.00);
+    end if;
+    return new;
+end;
+$$ language plpgsql;
+
+-- Create Triggers
+create trigger tr_expenses_sync
+after insert or update or delete on public.expenses
+for each row execute function public.tr_expenses_sync_func();
+
+create trigger tr_funds_log_sync
+after insert or update or delete on public.funds_log
+for each row execute function public.tr_funds_log_sync_func();
+
+create trigger tr_categories_sync
+before update of allocated_amount on public.categories
+for each row execute function public.tr_categories_sync_func();

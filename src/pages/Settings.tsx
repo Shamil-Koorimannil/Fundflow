@@ -29,6 +29,22 @@ export const Settings: React.FC = () => {
 
   // DB Mode state
   const [currentDbMode, setCurrentDbMode] = useState<'Local Sandbox' | 'Supabase DB'>(() => getDbMode());
+  const [syncing, setSyncing] = useState(false);
+
+  const handleResyncStats = async () => {
+    setSyncing(true);
+    try {
+      for (const cat of categories) {
+        await db.recalculateCategoryStats(cat.id);
+      }
+      alert('All category balances and spent amounts have been successfully resynced!');
+      await loadSettingsData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to sync database stats.');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Form modals state
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -323,6 +339,14 @@ export const Settings: React.FC = () => {
                 <span className="text-white font-extrabold">{recurring.length} jobs</span>
               </div>
             </div>
+
+            <button
+              onClick={handleResyncStats}
+              disabled={syncing}
+              className="w-full py-2.5 px-4 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/25 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-[0_0_10px_rgba(6,182,212,0.1)]"
+            >
+              <span>{syncing ? 'Resyncing database...' : 'Recalculate Category Stats'}</span>
+            </button>
           </div>
 
         </div>
